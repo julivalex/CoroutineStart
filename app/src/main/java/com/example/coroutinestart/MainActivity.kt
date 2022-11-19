@@ -2,6 +2,8 @@ package com.example.coroutinestart
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatCallback
@@ -87,27 +89,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadCityWithoutCoroutine(callback: (String) -> Unit) {
-        thread {
-            Thread.sleep(2000)
-            runOnUiThread {
-                callback.invoke("Moscow")
-            }
-        }
+        Handler(Looper.getMainLooper()).postDelayed({ callback.invoke("Moscow") }, 2000)
     }
 
     private fun getTemperatureWithoutCoroutine(city: String, callback: (Int) -> Unit) {
-        thread {
-            runOnUiThread {
-                Toast.makeText(
-                    this,
-                    getString(R.string.loading_temperature_toast, city),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-            Thread.sleep(2000)
-            runOnUiThread {
-                callback.invoke(17)
-            }
-        }
+        Toast.makeText(
+            this,
+            getString(R.string.loading_temperature_toast, city),
+            Toast.LENGTH_LONG
+        ).show()
+        Handler(Looper.getMainLooper()).postDelayed({ callback.invoke(17) }, 2000)
     }
 }
