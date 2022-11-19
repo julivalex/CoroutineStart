@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.example.coroutinestart.databinding.ActivityMainBinding
@@ -16,26 +17,16 @@ class MainActivity : AppCompatActivity() {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
-    private val handler = object : Handler() {
-
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            println("HANDLE_MSG $msg")
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.buttonLoad.setOnClickListener {
             loadData()
         }
-        thread {
-            handler.sendMessage(Message.obtain(handler, 0, 17))
-        }
     }
 
     private fun loadData() {
+        Log.d("MainActivity", "Load started: $this")
         binding.progress.isVisible = true
         binding.buttonLoad.isEnabled = false
         loadCity { city ->
@@ -44,6 +35,7 @@ class MainActivity : AppCompatActivity() {
                 binding.tvTemperature.text = temp.toString()
                 binding.progress.isVisible = false
                 binding.buttonLoad.isEnabled = true
+                Log.d("MainActivity", "Load finished: $this")
             }
         }
     }
