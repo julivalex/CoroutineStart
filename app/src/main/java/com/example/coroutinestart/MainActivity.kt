@@ -5,10 +5,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.Log.d
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.example.coroutinestart.databinding.ActivityMainBinding
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -24,17 +27,22 @@ class MainActivity : AppCompatActivity() {
         binding.buttonLoad.setOnClickListener {
             binding.progress.isVisible = true
             binding.buttonLoad.isEnabled = false
-            val jobCity = lifecycleScope.launch {
-                val city = loadCity()
-                binding.tvLocation.text = city
+            val deferredCity: Deferred<String> = lifecycleScope.async {
+                loadCity()
             }
-            val jobTemp = lifecycleScope.launch {
-                val temp = getTemperature()
-                binding.tvTemperature.text = temp.toString()
+            val deferredTemp: Deferred<Int> = lifecycleScope.async {
+                getTemperature()
             }
             lifecycleScope.launch {
-                jobCity.join()
-                jobTemp.join()
+                val city = deferredCity.await()
+                binding.tvLocation.text = city
+                val temp = deferredTemp.await()
+                binding.tvTemperature.text = temp.toString()
+                Toast.makeText(
+                    this@MainActivity,
+                    "City: $city Temp: $temp",
+                    Toast.LENGTH_LONG
+                ).show()
                 binding.progress.isVisible = false
                 binding.buttonLoad.isEnabled = true
             }
@@ -58,12 +66,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private suspend fun loadCity(): String {
-        delay(3000)
+        delay(1000)
         return "Moscow"
     }
 
     private suspend fun getTemperature(): Int {
-        delay(1000)
+        delay(3000)
         return 17
     }
 
