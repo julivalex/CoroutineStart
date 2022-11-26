@@ -14,6 +14,7 @@ import com.example.coroutinestart.databinding.ActivityMainBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.concurrent.thread
+import kotlin.coroutines.suspendCoroutine
 
 class MainActivity : AppCompatActivity() {
 
@@ -88,12 +89,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadCityWithoutCoroutine(callback: (String) -> Unit) {
-        Handler(Looper.getMainLooper())
-            .postDelayed(
-                {
-                    callback.invoke("Moscow")
-                }, 5000
-            )
+        thread {
+            Thread.sleep(5000)
+            runOnUiThread {
+                //вызовет loadWithoutCoroutine со значением Moscow
+                callback.invoke("Moscow")
+            }
+        }
+    }
+
+    private suspend fun loadCityWithContinuation() {
+        suspendCoroutine {
+            thread {
+                Thread.sleep(5000)
+            }
+            //вызовет loadWithoutCoroutine со значением Moscow
+            it.resumeWith(Result.success("Moscow"))
+        }
     }
 
     private fun getTemperatureWithoutCoroutine(city: String, callback: (Int) -> Unit) {
