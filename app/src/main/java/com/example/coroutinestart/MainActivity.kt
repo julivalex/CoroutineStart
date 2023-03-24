@@ -2,6 +2,8 @@ package com.example.coroutinestart
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.example.coroutinestart.databinding.ActivityMainBinding
@@ -37,19 +39,25 @@ class MainActivity : AppCompatActivity() {
     private fun loadCity(callback: (String) -> Unit) {
         thread {
             Thread.sleep(5000)
-            callback("Moscow")
+            runOnUiThread {
+                callback("Moscow")
+            }
         }
     }
 
     private fun getTemperature(city: String, callback: (Int) -> Unit) {
         thread {
-            Toast.makeText(
-                this,
-                getString(R.string.loading_temperature_toast, city),
-                Toast.LENGTH_LONG
-            ).show()
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    getString(R.string.loading_temperature_toast, city),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
             Thread.sleep(5000)
-            callback(17)
+            runOnUiThread {
+                callback(17)
+            }
         }
     }
 }
