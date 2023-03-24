@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.coroutinestart.databinding.ActivityMainBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,9 +21,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.buttonLoad.setOnClickListener {
-            lifecycleScope.launch {
-                loadData()
-            }
+//            lifecycleScope.launch {
+//                loadData()
+//            }
+            loadWithoutCoroutines()
         }
     }
 
@@ -31,12 +33,66 @@ class MainActivity : AppCompatActivity() {
         binding.progress.isVisible = true
         binding.buttonLoad.isEnabled = false
         val city = loadCity()
+
         binding.tvLocation.text = city
         val temp = getTemperature(city)
+
         binding.tvTemperature.text = temp.toString()
         binding.progress.isVisible = false
         binding.buttonLoad.isEnabled = true
         Log.d("MainActivity", "Load finished: $this")
+    }
+
+    private fun loadWithoutCoroutines(step: Int = 0, obj: Any? = null) {
+        when (step) {
+            0 -> {
+                Log.d("MainActivity", "Load started: $this")
+                binding.progress.isVisible = true
+                binding.buttonLoad.isEnabled = false
+                loadCityWithoutCoroutines {
+                    loadWithoutCoroutines(step = 1, obj = it)
+                }
+            }
+            1 -> {
+                val city = obj as String
+                binding.tvLocation.text = city
+                getTemperatureWithoutCoroutines(obj) {
+                    loadWithoutCoroutines(step = 2, obj = it)
+                }
+            }
+            else -> {
+                val temp = obj as Int
+                binding.tvTemperature.text = temp.toString()
+                binding.progress.isVisible = false
+                binding.buttonLoad.isEnabled = true
+                Log.d("MainActivity", "Load finished: $this")
+            }
+        }
+    }
+
+    private fun loadCityWithoutCoroutines(callback: (String) -> Unit) {
+        thread {
+            Thread.sleep(5000)
+            runOnUiThread {
+                callback("Moscow")
+            }
+        }
+    }
+
+    private fun getTemperatureWithoutCoroutines(city: String, callback: (Int) -> Unit) {
+        thread {
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    getString(R.string.loading_temperature_toast, city),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            Thread.sleep(5000)
+            runOnUiThread {
+                callback(17)
+            }
+        }
     }
 
     private suspend fun loadCity(): String {
